@@ -1,0 +1,61 @@
+from selenium import webdriver
+import time
+
+class WhatsappBot:
+    def __init__(self):
+        self.mensagem = ""
+        self.grupos = ["teste"]
+        self.check = ""
+        self.check_add = ""
+        options = webdriver.ChromeOptions()
+        options.add_argument('lang=pt-br')
+        self.driver = webdriver.Chrome(executable_path=r'./chromedriver.exe')
+
+    def Main(self):
+        self.driver.get('https://web.whatsapp.com')
+        time.sleep(1)
+        input()
+        #<span dir="auto" title="teste" class="_1wjpf _3NFp9 _3FXB1">teste</span>
+        #<div tabindex="-1" class="_1Plpp">
+        # <div class="vW7d1 message-in"><span></span><div data-id="false_556196111781-1586459418@g.us_3EB0A0204FEB14EBD79A" class="_3_7SH _3DFk6 tail focusable-list-item"><span class="tail-container"></span><span class="tail-container highlight"></span><div class="MVjBr _3e2jK"><div class="Tkt2p"><div class="_111ze color-1 _2lc14" role=""><span dir="auto" class="_2a1Yw _1OmDL _3FXB1">leandro ligoski</span></div><div class="_3Usvm copyable-text" data-pre-plain-text="[16:42, 09/04/2020] leandro ligoski: "><div class="_3zb-j" dir="ltr"><span dir="ltr" class="_3FXB1 selectable-text invisible-space copyable-text"><span>já?</span></span><span class="ZhF0n"></span></div></div><div class="_2f-RV"><div class="_1DZAH"><span class="_3EFt_" dir="auto">16:42</span></div></div></div></div><span></span></div></div>
+        # texto = self.driver.find_elements_by_class_name("message-in")
+        # texto = texto[-1].text.split()
+        # print(texto[0] + " + " + texto[1] + " + " + texto[2] + " + " + texto[3])
+        # Sendo index 0 para 1o nome, 1 para 2o nome <<<<<< as vezes nao vai, penultima para mensagem, ultima para data
+        # <div data-id="true_556196111781-1586459418@g.us_4230532564" class="_3_7SH Zq3Mc tail focusable-list-item"><span class="tail-container"></span><span class="tail-container highlight"></span><div class="MVjBr"><span class="_2ArBI"><span dir="ltr" class="_3FXB1 selectable-text invisible-space copyable-text">Você adicionou <span dir="auto" class="_3NFp9 _1OmDL _3FXB1">Arthur Barreiro</span></span></span></div><span></span></div>
+        # ^ add pessoa
+        for grupo in self.grupos:
+            grupo = self.driver.find_element_by_xpath(f"//span[@title='{grupo}']")
+            time.sleep(1)
+            grupo.click()
+
+            while(True):
+                triggered_mensagem = self.driver.find_elements_by_class_name("message-in")
+                trigger = triggered_mensagem[-1].text.split()
+                if trigger[-2][0] == '&' and self.check != triggered_mensagem:
+                    self.mensagem = trigger[-2]
+                    self.check = triggered_mensagem
+                    self.EnviarMensagem()
+
+                triggered_join = self.driver.find_elements_by_class_name("_2ArBI")
+                #print(triggered_join[-1].text)
+                #<div data-id="true_556196111781-1586459418@g.us_3014211914" class="_3_7SH Zq3Mc tail focusable-list-item"><span class="tail-container"></span><span class="tail-container highlight"></span><div class="MVjBr"><span class="_2ArBI"><span dir="ltr" class="_3FXB1 selectable-text invisible-space copyable-text"><span dir="auto" class="_3NFp9 _1OmDL _3FXB1">leandro ligoski</span> adicionou  <span dir="auto" class="_3NFp9 _1OmDL _3FXB1">Daniela Assuncao Mae</span></span></span></div><span></span></div>
+                trigger = triggered_join[-1].text.split()
+                if trigger[1] == 'adicionou' and self.check_add != triggered_join[-1].text:
+                    self.mensagem = "Boas vindas! eu sou o jarbas seu bot assistente,\npara testar-me digite '&' seguido de uma mensagem e eu irei repeti-la(com sorte apenas uma vez)"
+                    self.check_add = triggered_join[-1].text
+                    self.EnviarMensagem()
+
+
+    def EnviarMensagem(self):
+            chatbox = self.driver.find_element_by_class_name('_1Plpp')
+            time.sleep(1)
+            chatbox.click()
+            chatbox.send_keys(self.mensagem)
+            enviar = self.driver.find_element_by_xpath("//span[@data-icon='send']")
+            time.sleep(1)
+            enviar.click()
+            time.sleep(1)
+
+bot = WhatsappBot()
+bot.Main()
